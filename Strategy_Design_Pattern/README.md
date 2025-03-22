@@ -1,18 +1,12 @@
-## Getting Started
+## Strategy Design Pattern
 
-Welcome to the VS Code Java world. Here is a guideline to help you get started to write Java code in Visual Studio Code.
+The Strategy Pattern is a behavioral design pattern that allows a class's behavior to be selected at runtime. It helps define a family of algorithms, encapsulates each one, and makes them interchangeable.
 
-## Folder Structure
+## When to Use
 
-The workspace contains two folders by default, where:
+- When you have multiple algorithms for a specific task and want to switch between them dynamically.
 
-- `src`: the folder to maintain sources
-- `lib`: the folder to maintain dependencies
+- When you want to avoid using too many if-else or switch statements.
 
-Meanwhile, the compiled output files will be generated in the `bin` folder by default.
+- When you want to keep algorithms independent of the client code.
 
-> If you want to customize the folder structure, open `.vscode/settings.json` and update the related settings there.
-
-## Dependency Management
-
-The `JAVA PROJECTS` view allows you to manage your dependencies. More details can be found [here](https://github.com/microsoft/vscode-java-dependency#manage-dependencies).
