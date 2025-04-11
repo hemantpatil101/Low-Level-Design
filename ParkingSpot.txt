@@ -1,0 +1,141 @@
+public class Vehicle {
+    private String vehicleType;
+    private String numberPlate;
+
+    public Vehicle(String vehicleType, String numberPlate) {
+        this.vehicleType = vehicleType;
+        this.numberPlate = numberPlate;
+    }
+
+    public String getVehicleType() {
+        return vehicleType;
+    }
+
+    public String getNumberPlate() {
+        return numberPlate;
+    }
+}
+
+
+public class ParkingSpot {
+    private String parkingSpotId;
+    private String vehicleType;
+    private Vehicle parkedVehicle;
+    private int rentPerTime;
+
+    public ParkingSpot(String parkingSpotId, String vehicleType) {
+        this.parkingSpotId = parkingSpotId;
+        this.vehicleType = vehicleType;
+        this.parkedVehicle = null;
+        this.rentPerTime = rent;
+    }
+
+    public boolean isAvailable() {
+        return parkedVehicle == null;
+    }
+
+    public void bookSpot(Vehicle vehicle) {
+        if (isAvailable() && vehicle.getVehicleType().equals(this.vehicleType)) {
+            this.parkedVehicle = vehicle;
+        } else {
+            throw new IllegalStateException("Spot not available or incorrect vehicle type");
+        }
+    }
+
+    public void vacateSpot() {
+        this.parkedVehicle = null;
+    }
+}
+
+
+public class ParkingLot {
+    private List<ParkingSpot> allParkingSpots;
+    private Map<String, List<ParkingSpot>> vacantParkingSpotsByType;
+
+    public ParkingLot(List<ParkingSpot> allParkingSpots) {
+        this.allParkingSpots = allParkingSpots;
+        this.vacantParkingSpotsByType = new HashMap<>();
+        categorizeVacantSpots();
+    }
+
+    private void categorizeVacantSpots() {
+        for (ParkingSpot spot : allParkingSpots) {
+            vacantParkingSpotsByType
+                .computeIfAbsent(spot.getVehicleType(), k -> new ArrayList<>())
+                .add(spot);
+        }
+    }
+
+    public boolean checkIfAvailable(String vehicleType) {
+        return vacantParkingSpotsByType.containsKey(vehicleType) && !vacantParkingSpotsByType.get(vehicleType).isEmpty();
+    }
+
+    public ParkingSpot getVacantSpot(String vehicleType) {
+        if (checkIfAvailable(vehicleType)) {
+            return vacantParkingSpotsByType.get(vehicleType).remove(0);
+        }
+        throw new NoSuchElementException("No vacant spot available");
+    }
+
+    public void clearSpot(ParkingSpot spot) {
+        spot.vacateSpot();
+        vacantParkingSpotsByType.computeIfAbsent(spot.getVehicleType(), k -> new ArrayList<>()).add(spot);
+    }
+}
+
+
+public class EntryGate {
+    private String entryPointID;
+    private ParkingLot parkingLot;
+
+    public EntryGate(String entryPointID, ParkingLot parkingLot) {
+        this.entryPointID = entryPointID;
+        this.parkingLot = parkingLot;
+    }
+
+    public ParkingTicket generateTicket(Vehicle vehicle) {
+        ParkingSpot spot = parkingLot.getVacantSpot(vehicle.getVehicleType());
+        spot.bookSpot(vehicle);
+        return new ParkingTicket(UUID.randomUUID().toString(), vehicle, spot);
+    }
+}
+
+
+public class ExitGate {
+    private String exitPointID;
+    private ParkingLot parkingLot;
+
+    public ExitGate(String exitPointID, ParkingLot parkingLot) {
+        this.exitPointID = exitPointID;
+        this.parkingLot = parkingLot;
+    }
+
+    public double processPayment(ParkingTicket ticket) {
+        double amount = ticket.calculateCharge();
+        parkingLot.clearSpot(ticket.getSpot());
+        return amount;
+    }
+}
+
+public class ParkingTicket {
+    private String ticketId;
+    private Vehicle vehicle;
+    private ParkingSpot spot;
+    private LocalDateTime entryTime;
+
+    public ParkingTicket(String ticketId, Vehicle vehicle, ParkingSpot spot) {
+        this.ticketId = ticketId;
+        this.vehicle = vehicle;
+        this.spot = spot;
+        this.entryTime = LocalDateTime.now();
+    }
+
+    public ParkingSpot getSpot() {
+        return spot;
+    }
+
+    public double calculateCharge() {
+        long hours = Duration.between(entryTime, LocalDateTime.now()).toHours();
+        return hours * spot.rentPerTime;
+    }
+}
